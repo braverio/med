@@ -32,13 +32,14 @@ def login():
 		in_pass = request.form['password']
 		db = MySQLdb.connect(app.config['DB_HOST'],app.config['DB_USER'],app.config['DB_PASS'],app.config['DB_NAME'])
 		c = db.cursor()
-		c.execute("SELECT salt FROM %s WHERE username='%s'" % (app.config['TABLE_LOGINS'],in_user))
+		sql = "SELECT salt FROM %s WHERE username='%s'",app.config['TABLE_LOGINS'],in_user
+		c.execute(sql)
 		if c.rowcount == 1:
 			salt = str(c.fetchone()[0])
 			app.logger.error(salt)
 			hashed = sha1_salt(in_pass,salt)
 			c = db.cursor()	
-			sql = "SELECT * FROM %s WHERE username='%s' AND password='%s'" % (app.config['TABLE_LOGINS'],in_user,str(hashed))
+			sql = "SELECT * FROM %s WHERE username='%s' AND password='%s'",app.config['TABLE_LOGINS'],in_user,str(hashed)
 			c.execute(sql)
 			app.logger.error(sql)
 			if c.rowcount == 1:
