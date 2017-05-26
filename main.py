@@ -28,19 +28,21 @@ def index():
 @app.route('/login', methods=['GET','POST'])
 def login():
 	if request.method == 'POST':
-		in_user = str(request.form['username'])
-		in_pass = str(request.form['password'])
+		in_user = request.form['username']
+		in_pass = request.form['password']
 		db = MySQLdb.connect(app.config['DB_HOST'],app.config['DB_USER'],app.config['DB_PASS'],app.config['DB_NAME'])
 		c = db.cursor()
-		sql = "SELECT salt FROM %s WHERE username='%s'"
-		c.executemany(sql,[app.config['TABLE_LOGINS'],in_user])
+		sql = "SELECT salt FROM {} WHERE username=%s".format(app.config['TABLE_LOGINS'])
+		app.logger.error(sql)
+		c.execute(sql,[in_user])
 		if c.rowcount == 1:
 			salt = c.fetchone()[0]
 			app.logger.error(salt)
 			hashed = sha1_salt(in_pass,str(salt))
 			c = db.cursor()	
-			sql = "SELECT * FROM %s WHERE username='%s' AND password='%s'"
-			c.executemany(sql,[app.config['TABLE_LOGINS'],in_user,str(hashed)])
+			sql = "SELECT * FROM {} WHERE username=%s AND password=%s".format(app.config['TABLE_LOGINS'])
+			app.logger.error(sql)
+			c.execute(sql,[in_user,str(hashed)])
 			app.logger.error(sql)
 			if c.rowcount == 1:
 				results = c.fetchall()
